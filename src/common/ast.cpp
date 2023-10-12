@@ -11,6 +11,7 @@
     std::abort();
 #define _STR_EQ(a, b) (strcmp((a), (b)) == 0)
 
+//从AST根节点开始使用visitor遍历访问全部AST节点
 void AST::run_visitor(ASTVisitor &visitor) { root->accept(visitor); }
 
 AST::AST(syntax_tree *s) {

@@ -6,6 +6,7 @@
 #include "IRBuilder.hpp"
 #include "Module.hpp"
 #include "Type.hpp"
+#include "Value.hpp"
 #include "ast.hpp"
 
 #include <map>
@@ -109,5 +110,8 @@ class CminusfBuilder : public ASTVisitor {
         // function that is being built
         Function *func = nullptr;
         // TODO: you should add more fields to store state
+        Value *val;
+        Value *ptr;
+        Type *type;
     } context;
 };
