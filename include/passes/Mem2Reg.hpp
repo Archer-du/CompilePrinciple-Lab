@@ -6,13 +6,18 @@
 
 #include <map>
 #include <memory>
+#include <stack>
 
 class Mem2Reg : public Pass {
   private:
     Function *func_;
     std::unique_ptr<Dominators> dominators_;
-
     // TODO 添加需要的变量
+    std::set<Value *> mem_vars;
+    std::set<Value *> global_name;
+    std::unordered_map<Value *, Dominators::BBSet> defs{};
+    std::map<PhiInst *, Value *> phi_lval_map_{};
+    std::map<Value *, std::stack<Value *>> stack_map_;
 
   public:
     Mem2Reg(Module *m) : Pass(m) {}

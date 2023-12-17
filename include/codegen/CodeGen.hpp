@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ASMInstruction.hpp"
+#include "Instruction.hpp"
 #include "Module.hpp"
 #include "Register.hpp"
 
@@ -27,6 +28,8 @@ class CodeGen {
         content.pop_back();
         output.emplace_back(content, ty);
     }
+    
+    void gen_phi_pred(BasicBlock *bb);
 
   private:
     void allocate();

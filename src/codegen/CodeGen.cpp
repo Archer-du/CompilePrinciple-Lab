@@ -1,5 +1,8 @@
 #include "CodeGen.hpp"
 #include "CodeGenUtil.hpp"
+#include "Instruction.hpp"
+#include <algorithm>
+#include <iostream>
 
 void CodeGen::allocate() {
     // 备份 $ra $fp
@@ -224,17 +227,34 @@ void CodeGen::gen_ret() {
     append_inst("b " + context.func->get_name() + "_exit");
 }
 
+void CodeGen::gen_phi_pred(BasicBlock *targetbb){
+    for(auto &inst : targetbb->get_instructions()){
+        if(not inst.is_phi()) break;
+        auto phi_inst = static_cast<PhiInst *>(&inst);
+        auto &operands = phi_inst->get_operands();
+        for(int i = 0; i < phi_inst->get_num_operand(); i++){
+            if(operands[i] == context.inst->get_parent()){
+                load_to_greg(operands[i - 1], Reg::t(0));
+                store_from_greg(phi_inst, Reg::t(0));
+                break;
+            }
+        }
+    }
+}
 void CodeGen::gen_br() {
     auto *branchInst = static_cast<BranchInst *>(context.inst);
     if (branchInst->is_cond_br()) {
         //  补全条件跳转的情况
         load_to_greg(branchInst->get_operand(0), Reg::t(0));
         auto truebb = static_cast<BasicBlock *>(branchInst->get_operand(1));
+        gen_phi_pred(truebb);
         auto falsebb = static_cast<BasicBlock *>(branchInst->get_operand(2));
+        gen_phi_pred(falsebb);
         append_inst("bnez $t0, " + label_name(truebb));
         append_inst("b " + label_name(falsebb));
     } else {
         auto *branchbb = static_cast<BasicBlock *>(branchInst->get_operand(0));
+        gen_phi_pred(branchbb);
         append_inst("b " + label_name(branchbb));
     }
 }
@@ -604,7 +624,6 @@ void CodeGen::run() {
                         gen_fcmp();
                         break;
                     case Instruction::phi:
-                        throw not_implemented_error{"need to handle phi!"};
                         break;
                     case Instruction::call:
                         gen_call();
